@@ -15,6 +15,8 @@ export default function UserDetailPage() {
   const [userDetail, setUserDetail] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const userId = params.id as string
 
@@ -45,6 +47,30 @@ export default function UserDetailPage() {
     router.back()
   }
 
+  const handleDeleteUser = async () => {
+    if (!userDetail) return
+    
+    try {
+      setDeleting(true)
+      await userService.deleteUser(userDetail.id)
+      // Redirect to dashboard after successful deletion
+      router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete user')
+      setShowDeleteConfirm(false)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const confirmDelete = () => {
+    setShowDeleteConfirm(true)
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-warm">
       {/* Header */}
@@ -66,11 +92,20 @@ export default function UserDetailPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Back Button */}
-        <div className="mb-6">
-          <Button onClick={handleBack} variant="outline" className="mb-4">
+        {/* Back Button and Actions */}
+        <div className="mb-6 flex justify-between items-center">
+          <Button onClick={handleBack} variant="outline">
             ← Back to Dashboard
           </Button>
+          {userDetail && (
+            <Button 
+              onClick={confirmDelete} 
+              variant="destructive"
+              disabled={deleting}
+            >
+              {deleting ? 'Deleting...' : 'Delete User'}
+            </Button>
+          )}
         </div>
 
         {loading ? (
@@ -268,6 +303,39 @@ export default function UserDetailPage() {
             </Card>
           </div>
         ) : null}
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle className="text-destructive">Confirm Delete</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground-muted mb-4">
+                  Are you sure you want to delete <strong>{userDetail?.firstName} {userDetail?.lastName}</strong>? 
+                  This action cannot be undone.
+                </p>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    onClick={cancelDelete} 
+                    variant="outline"
+                    disabled={deleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={handleDeleteUser} 
+                    variant="destructive"
+                    disabled={deleting}
+                  >
+                    {deleting ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
     </div>
   )

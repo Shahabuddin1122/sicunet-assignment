@@ -17,6 +17,8 @@ export default function DashboardPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalUsers, setTotalUsers] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
+  const [deleting, setDeleting] = useState<number | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<number | null>(null)
   const usersPerPage = 6
 
   const handleLogout = () => {
@@ -49,6 +51,29 @@ export default function DashboardPage() {
 
   const handleUserClick = (userId: number) => {
     router.push(`/dashboard/users/${userId}`)
+  }
+
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      setDeleting(userId)
+      await userService.deleteUser(userId)
+      // Refresh the current page data
+      await fetchUsers(currentPage)
+      setShowDeleteConfirm(null)
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete user')
+      setShowDeleteConfirm(null)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const confirmDelete = (userId: number) => {
+    setShowDeleteConfirm(userId)
+  }
+
+  const cancelDelete = () => {
+    setShowDeleteConfirm(null)
   }
 
   return (
@@ -114,7 +139,7 @@ export default function DashboardPage() {
                   {users.map((user) => (
                     <Card 
                       key={user.id} 
-                      className="hover:shadow-md transition-shadow cursor-pointer hover:scale-105 transform transition-transform"
+                      className="hover:shadow-md transition-shadow cursor-pointer hover:scale-105 transform transition-transform relative group"
                       onClick={() => handleUserClick(user.id)}
                     >
                       <CardContent className="p-4">
@@ -144,6 +169,18 @@ export default function DashboardPage() {
                             </div>
                           </div>
                         </div>
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            confirmDelete(user.id)
+                          }}
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-2 right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          disabled={deleting === user.id}
+                        >
+                          {deleting === user.id ? '...' : '×'}
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -202,6 +239,38 @@ export default function DashboardPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* Delete Confirmation Dialog */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle className="text-destructive">Confirm Delete</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-foreground-muted mb-4">
+                  Are you sure you want to delete this user? This action cannot be undone.
+                </p>
+                <div className="flex justify-end space-x-2">
+                  <Button 
+                    onClick={cancelDelete} 
+                    variant="outline"
+                    disabled={deleting !== null}
+                  >
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={() => handleDeleteUser(showDeleteConfirm)} 
+                    variant="destructive"
+                    disabled={deleting !== null}
+                  >
+                    {deleting !== null ? 'Deleting...' : 'Delete'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </main>
     </div>
   )
