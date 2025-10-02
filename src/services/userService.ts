@@ -1,5 +1,5 @@
 import fetchService from './fetchService';
-import { User, CreateUser, PartialUser } from '@/types/user';
+import { User, CreateUser, PartialUser, AddUser } from '@/types/user';
 
 interface UserResponse {
     users: User[];
@@ -28,6 +28,11 @@ class UserService {
 
     // Create a new user
     async createUser(userData: CreateUser): Promise<User> {
+        return await fetchService.post<User>(`${this.endpoint}/add`, userData);
+    }
+
+    // Add a new user (simplified version for the form)
+    async addUser(userData: AddUser): Promise<User> {
         return await fetchService.post<User>(`${this.endpoint}/add`, userData);
     }
 

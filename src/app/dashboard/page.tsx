@@ -114,9 +114,17 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
               <span>User List</span>
-              <span className="text-sm font-normal text-foreground-muted">
-                Total: {totalUsers} users
-              </span>
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-normal text-foreground-muted">
+                  Total: {totalUsers} users
+                </span>
+                <Button 
+                  onClick={() => router.push('/dashboard/users/add')}
+                  size="sm"
+                >
+                  Add User
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>

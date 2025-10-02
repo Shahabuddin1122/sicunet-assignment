@@ -78,3 +78,13 @@ export type PartialUser = Partial<User>;
 
 // Optional: Create a type for user creation (without id)
 export type CreateUser = Omit<User, 'id'>;
+
+// Type for adding a new user (only required fields for the API)
+export interface AddUser {
+  username: string;
+  password: string;
+  email: string;
+  birthDate: string;
+  weight: number;
+  image: string;
+}
