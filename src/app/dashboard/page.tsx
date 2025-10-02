@@ -3,20 +3,54 @@
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { useState, useEffect } from 'react'
+import userService from '@/services/userService'
+import { User } from '@/types/user'
 
 export default function DashboardPage() {
   const { user, logout } = useAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalUsers, setTotalUsers] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+  const usersPerPage = 6
 
   const handleLogout = () => {
     logout()
+  }
+
+  const fetchUsers = async (page: number) => {
+    try {
+      setLoading(true)
+      setError(null)
+      const skip = (page - 1) * usersPerPage
+      const response = await userService.getUsers(skip, usersPerPage)
+      setUsers(response.users)
+      setTotalUsers(response.total)
+      setTotalPages(Math.ceil(response.total / usersPerPage))
+    } catch (err: any) {
+      setError(err.message || 'Failed to fetch users')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers(currentPage)
+  }, [currentPage])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
   }
 
   return (
     <div className="min-h-screen bg-gradient-warm">
       {/* Header */}
       <header className="bg-background shadow-soft">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
+        <div className="container mx-auto px-4 py-4 flex justify-end sm:justify-between items-center">
+          <h1 className="text-2xl font-bold text-foreground hidden sm:block">Dashboard</h1>
           <div className="flex items-center space-x-4">
             <span className="text-foreground-muted">Welcome, {user?.username}</span>
             <Button 
@@ -32,82 +66,132 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Welcome Card */}
-          <Card className="col-span-full">
-            <CardHeader>
-              <CardTitle className="text-primary">Welcome to Your Dashboard</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-foreground-muted">
-                You have successfully logged in to the system. This is your protected dashboard area.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Welcome Card */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="text-primary">Welcome to Your Dashboard</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-foreground-muted">
+              You have successfully logged in to the system. This is your protected dashboard area.
+            </p>
+          </CardContent>
+        </Card>
 
-          {/* Stats Cards */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Total Users</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-primary">1,234</div>
-              <p className="text-sm text-foreground-muted">+12% from last month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Revenue</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-secondary">$45,678</div>
-              <p className="text-sm text-foreground-muted">+8% from last month</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Orders</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-accent">567</div>
-              <p className="text-sm text-foreground-muted">+23% from last month</p>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card className="col-span-full">
-            <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4 p-3 bg-background-secondary rounded-lg">
-                  <div className="w-2 h-2 bg-success rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">User login successful</p>
-                    <p className="text-xs text-foreground-muted">2 minutes ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4 p-3 bg-background-secondary rounded-lg">
-                  <div className="w-2 h-2 bg-info rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">System updated</p>
-                    <p className="text-xs text-foreground-muted">1 hour ago</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4 p-3 bg-background-secondary rounded-lg">
-                  <div className="w-2 h-2 bg-warning rounded-full"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-foreground">Maintenance scheduled</p>
-                    <p className="text-xs text-foreground-muted">3 hours ago</p>
-                  </div>
-                </div>
+        {/* User List Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between items-center">
+              <span>User List</span>
+              <span className="text-sm font-normal text-foreground-muted">
+                Total: {totalUsers} users
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <span className="ml-2 text-foreground-muted">Loading users...</span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500 mb-4">{error}</p>
+                <Button onClick={() => fetchUsers(currentPage)} variant="outline">
+                  Try Again
+                </Button>
+              </div>
+            ) : (
+              <>
+                {/* User Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  {users.map((user) => (
+                    <Card key={user.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center space-x-3">
+                          <img
+                            src={user.image}
+                            alt={`${user.firstName} ${user.lastName}`}
+                            className="w-12 h-12 rounded-full object-cover"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-foreground truncate">
+                              {user.firstName} {user.lastName}
+                            </h3>
+                            <p className="text-sm text-foreground-muted truncate">
+                              @{user.username}
+                            </p>
+                            <p className="text-xs text-foreground-muted">
+                              {user.email}
+                            </p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                                {user.gender}
+                              </span>
+                              <span className="text-xs bg-secondary/10 text-secondary px-2 py-1 rounded">
+                                {user.age} years
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center space-x-2">
+                    <Button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Previous
+                    </Button>
+                    
+                    <div className="flex space-x-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <Button
+                            key={pageNum}
+                            onClick={() => handlePageChange(pageNum)}
+                            variant={currentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            className="w-8 h-8 p-0"
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

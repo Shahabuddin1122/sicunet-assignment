@@ -1,13 +1,26 @@
+import authService from './authService';
+
 interface FetchOptions {
     headers?: HeadersInit;
     body?: any;
+    skipAuth?: boolean; // Option to skip adding auth header for specific requests
 }
 
 class FetchService {
     private readonly baseUrl: string;
     constructor() {
         // Use Next.js environment variable
-        this.baseUrl = process.env.NEXT_PUBLIC_API_URL;
+        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    }
+
+    private getAuthHeaders(): HeadersInit {
+        const token = authService.getToken();
+        if (token) {
+            return {
+                'Authorization': `Bearer ${token}`
+            };
+        }
+        return {};
     }
 
     private async handleResponse(response: Response) {
@@ -36,12 +49,21 @@ class FetchService {
     }
 
     async get<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+        let headers: HeadersInit = {
+            "Content-Type": "application/json",
+            ...this.getAuthHeaders(),
+            ...options.headers,
+        };
+
+        // Remove auth headers if skipAuth is true
+        if (options.skipAuth && 'Authorization' in headers) {
+            const { Authorization, ...restHeaders } = headers as Record<string, string>;
+            headers = restHeaders;
+        }
+
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
+            headers,
         });
         return this.handleResponse(response);
     }
@@ -50,12 +72,21 @@ class FetchService {
         data: any,
         options: FetchOptions = {}
     ): Promise<T> {
+        let headers: HeadersInit = {
+            "Content-Type": "application/json",
+            ...this.getAuthHeaders(),
+            ...options.headers,
+        };
+
+        // Remove auth headers if skipAuth is true
+        if (options.skipAuth && 'Authorization' in headers) {
+            const { Authorization, ...restHeaders } = headers as Record<string, string>;
+            headers = restHeaders;
+        }
+
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
+            headers,
             body: JSON.stringify(data),
         });
         return this.handleResponse(response);
@@ -67,24 +98,42 @@ class FetchService {
         data: any,
         options: FetchOptions = {}
     ): Promise<T> {
+        let headers: HeadersInit = {
+            "Content-Type": "application/json",
+            ...this.getAuthHeaders(),
+            ...options.headers,
+        };
+
+        // Remove auth headers if skipAuth is true
+        if (options.skipAuth && 'Authorization' in headers) {
+            const { Authorization, ...restHeaders } = headers as Record<string, string>;
+            headers = restHeaders;
+        }
+
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
+            headers,
             body: JSON.stringify(data),
         });
         return this.handleResponse(response);
     }
 
     async delete<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
+        let headers: HeadersInit = {
+            "Content-Type": "application/json",
+            ...this.getAuthHeaders(),
+            ...options.headers,
+        };
+
+        // Remove auth headers if skipAuth is true
+        if (options.skipAuth && 'Authorization' in headers) {
+            const { Authorization, ...restHeaders } = headers as Record<string, string>;
+            headers = restHeaders;
+        }
+
         const response = await fetch(`${this.baseUrl}${endpoint}`, {
             method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-                ...options.headers,
-            },
+            headers,
         });
         return this.handleResponse(response);
     }

@@ -36,10 +36,8 @@ export default function LoginPage() {
       const result = await login(formData.username, formData.password)
       
       if (result.success) {
-        // Login successful, redirect to dashboard
         router.push('/dashboard')
       } else {
-        // Login failed, show error message
         setError(result.error || 'Invalid username or password')
       }
     } catch (err) {
