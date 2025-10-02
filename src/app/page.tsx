@@ -1,5 +1,10 @@
+import {Button} from "@/components/ui/button";
+
 export default function Home() {
   return (
-    <div>Hello World</div>
+    <div>
+      <h1 >Hello</h1>
+      <Button variant={"default"}>Save</Button>
+    </div>
   );
 }

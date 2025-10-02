@@ -1,26 +1,321 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Custom Color Palette */
+  --background: #FFFF; /* Light yellow background */
+  --foreground: #000B58; /* Dark blue text */
+  
+  /* Primary Colors */
+  --primary: #003161; /* Main primary color */
+  --primary-dark: #000B58; /* Darker primary */
+  --primary-light: #006A67; /* Teal secondary */
+  --primary-foreground: #FDEB9E; /* Light yellow for text on dark backgrounds */
+  
+  /* Secondary Colors */
+  --secondary: #006A67; /* Teal */
+  --secondary-foreground: #FDEB9E;
+  
+  /* Accent Colors */
+  --accent: #000B58; /* Dark blue accent */
+  --accent-foreground: #FDEB9E;
+  
+  /* Background Variants */
+  --background-secondary: #ffffff;
+  --background-tertiary: #f8f9fa;
+  --background-muted: #f1f3f4;
+  
+  /* Foreground Variants */
+  --foreground-secondary: #003161;
+  --foreground-muted: #006A67;
+  
+  /* Semantic Colors */
+  --success: #006A67; /* Teal for success */
+  --success-foreground: #FDEB9E;
+  --warning: #003161; /* Blue for warnings */
+  --warning-foreground: #FDEB9E;
+  --error: #000B58; /* Dark blue for errors */
+  --error-foreground: #FDEB9E;
+  --info: #006A67; /* Teal for info */
+  --info-foreground: #FDEB9E;
+  
+  /* Border and Ring Colors */
+  --border: #003161;
+  --ring: #006A67;
+  
+  /* Input Colors */
+  --input: #FDEB9E;
+  
+  /* Muted Colors */
+  --muted: #f8f9fa;
+  --muted-foreground: #006A67;
+  
+  /* Card Colors */
+  --card: #FDEB9E;
+  --card-foreground: #000B58;
+  
+  /* Popover Colors */
+  --popover: #FDEB9E;
+  --popover-foreground: #000B58;
 }
 
 @theme inline {
+  /* Base Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  
+  /* Primary Colors */
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-primary-foreground: var(--primary-foreground);
+  
+  /* Secondary Colors */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  
+  /* Accent Colors */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  
+  /* Background Variants */
+  --color-background-secondary: var(--background-secondary);
+  --color-background-tertiary: var(--background-tertiary);
+  --color-background-muted: var(--background-muted);
+  
+  /* Foreground Variants */
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+  
+  /* Semantic Colors */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  
+  /* Border and Ring Colors */
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  
+  /* Input Colors */
+  --color-input: var(--input);
+  
+  /* Muted Colors */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  
+  /* Card Colors */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  
+  /* Popover Colors */
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  
+  /* Fonts */
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    /* Dark mode with the custom palette */
+    --background: #000B58; /* Dark blue background */
+    --foreground: #FDEB9E; /* Light yellow text */
+    
+    /* Dark mode background variants */
+    --background-secondary: #003161;
+    --background-tertiary: #006A67;
+    --background-muted: #001122;
+    
+    /* Dark mode foreground variants */
+    --foreground-secondary: #FDEB9E;
+    --foreground-muted: #ffffff;
+    
+    /* Dark mode border */
+    --border: #006A67;
+    
+    /* Dark mode accent */
+    --accent: #006A67;
+    --accent-foreground: #FDEB9E;
+    
+    /* Dark mode card colors */
+    --card: #003161;
+    --card-foreground: #FDEB9E;
+    
+    /* Dark mode popover colors */
+    --popover: #003161;
+    --popover-foreground: #FDEB9E;
+    
+    /* Dark mode input colors */
+    --input: #003161;
+    
+    /* Dark mode muted colors */
+    --muted: #001122;
+    --muted-foreground: #ffffff;
   }
+}
+
+/* Base styles */
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--secondary-300);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary-400);
+}
+
+/* Selection styles */
+::selection {
+  background: var(--primary-200);
+  color: var(--primary-900);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* Typography improvements */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+h1 {
+  font-size: 2.5rem;
+  line-height: 1.1;
+}
+
+h2 {
+  font-size: 2rem;
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.3;
+}
+
+/* Link styles */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--primary-600);
+}
+
+/* Button base styles */
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+/* Form elements */
+input, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* Utility classes */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
+}
+
+/* Print styles */
+@media print {
+  * {
+    background: transparent !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  
+  a, a:visited {
+    text-decoration: underline;
+  }
+  
+  a[href]:after {
+    content: " (" attr(href) ")";
+  }
+  
+  abbr[title]:after {
+    content: " (" attr(title) ")";
+  }
+  
+  .no-print {
+    display: none !important;
+  }
 }
