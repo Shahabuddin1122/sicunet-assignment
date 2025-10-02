@@ -44,7 +44,7 @@ export default function UserDetailPage() {
   }, [userId])
 
   const handleBack = () => {
-    router.back()
+    router.push('/dashboard')
   }
 
   const handleDeleteUser = async () => {
@@ -98,13 +98,24 @@ export default function UserDetailPage() {
             ← Back to Dashboard
           </Button>
           {userDetail && (
-            <Button 
-              onClick={confirmDelete} 
-              variant="destructive"
-              disabled={deleting}
-            >
-              {deleting ? 'Deleting...' : 'Delete User'}
-            </Button>
+            <div className="flex space-x-2">
+              <Button 
+                onClick={() => router.push(`/dashboard/users/${userDetail.id}/edit`)}
+                variant="outline"
+              >
+                Edit User
+              </Button>
+              {/* Only show delete button if user is not deleting their own account */}
+              {userDetail.id !== user?.id && (
+                <Button 
+                  onClick={confirmDelete} 
+                  variant="destructive"
+                  disabled={deleting}
+                >
+                  {deleting ? 'Deleting...' : 'Delete User'}
+                </Button>
+              )}
+            </div>
           )}
         </div>
 

@@ -9,7 +9,7 @@ import userService from '@/services/userService'
 import { User } from '@/types/user'
 
 export default function DashboardPage() {
-  const { user, logout } = useAuth()
+  const { user: currentUser, logout } = useAuth()
   const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -83,7 +83,7 @@ export default function DashboardPage() {
         <div className="container mx-auto px-4 py-4 flex justify-end sm:justify-between items-center">
           <h1 className="text-2xl font-bold text-foreground hidden sm:block">Dashboard</h1>
           <div className="flex items-center space-x-4">
-            <span className="text-foreground-muted">Welcome, {user?.username}</span>
+            <span className="text-foreground-muted">Welcome, {currentUser?.username}</span>
             <Button 
               onClick={handleLogout}
               variant="outline"
@@ -177,18 +177,34 @@ export default function DashboardPage() {
                             </div>
                           </div>
                         </div>
-                        <Button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            confirmDelete(user.id)
-                          }}
-                          variant="destructive"
-                          size="sm"
-                          className="absolute top-2 right-2 w-6 h-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                          disabled={deleting === user.id}
-                        >
-                          {deleting === user.id ? '...' : '×'}
-                        </Button>
+                        <div className="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/dashboard/users/${user.id}/edit`)
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-6 h-6 px-4 text-xs"
+                          >
+                            edit
+                          </Button>
+                          {/* Only show delete button if user is not deleting their own account */}
+                          {user.id !== currentUser?.id && (
+                            <Button
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                confirmDelete(user.id)
+                              }}
+                              variant="destructive"
+                              size="sm"
+                              className="w-6 h-6 p-0"
+                              disabled={deleting === user.id}
+                            >
+                              {deleting === user.id ? '...' : '×'}
+                            </Button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

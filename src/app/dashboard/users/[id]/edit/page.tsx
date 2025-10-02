@@ -4,15 +4,28 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import userService from '@/services/userService'
-import { AddUser } from '@/types/user'
+import { User } from '@/types/user'
 
-export default function AddUserPage() {
+interface EditUserForm {
+  username: string;
+  password: string;
+  email: string;
+  birthDate: string;
+  weight: number;
+  image: string;
+}
+
+export default function EditUserPage() {
   const { user, logout } = useAuth()
   const router = useRouter()
-  const [formData, setFormData] = useState<AddUser>({
+  const params = useParams()
+  const userId = params.id as string
+
+  const [userData, setUserData] = useState<User | null>(null)
+  const [formData, setFormData] = useState<EditUserForm>({
     username: '',
     password: '',
     email: '',
@@ -20,13 +33,51 @@ export default function AddUserPage() {
     weight: 0,
     image: ''
   })
-  const [errors, setErrors] = useState<Partial<AddUser>>({})
+  const [errors, setErrors] = useState<Partial<EditUserForm>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const handleLogout = () => {
     logout()
   }
+
+  const fetchUserData = async () => {
+    try {
+      setIsLoading(true)
+      const user = await userService.getUserById(parseInt(userId))
+      setUserData(user)
+      
+      // Populate form with existing user data
+      // Convert birth date to proper format for HTML date input (YYYY-MM-DD)
+      const formatDateForInput = (dateString: string) => {
+        const date = new Date(dateString)
+        const year = date.getFullYear()
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        const day = String(date.getDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      }
+
+      setFormData({
+        username: user.username,
+        password: user.password,
+        email: user.email,
+        birthDate: formatDateForInput(user.birthDate),
+        weight: user.weight,
+        image: user.image
+      })
+    } catch (err: any) {
+      setSubmitError(err.message || 'Failed to fetch user data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (userId) {
+      fetchUserData()
+    }
+  }, [userId])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -36,7 +87,7 @@ export default function AddUserPage() {
     }))
     
     // Clear error when user starts typing
-    if (errors[name as keyof AddUser]) {
+    if (errors[name as keyof EditUserForm]) {
       setErrors(prev => ({
         ...prev,
         [name]: undefined
@@ -45,7 +96,7 @@ export default function AddUserPage() {
   }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<AddUser> = {}
+    const newErrors: Partial<EditUserForm> = {}
     
     // Required field validation
     if (!formData.username.trim()) {
@@ -113,7 +164,7 @@ export default function AddUserPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!validateForm()) {
+    if (!validateForm() || !userData) {
       return
     }
     
@@ -121,15 +172,50 @@ export default function AddUserPage() {
       setIsSubmitting(true)
       setSubmitError(null)
       
-      await userService.addUser(formData)
+      // Create updated user object with all required fields
+      const updatedUser: User = {
+        ...userData,
+        username: formData.username,
+        password: formData.password,
+        email: formData.email,
+        birthDate: formData.birthDate,
+        weight: formData.weight,
+        image: formData.image
+      }
+      
+      await userService.updateUser(parseInt(userId), updatedUser)
       
       // Redirect to dashboard on success
       router.push('/dashboard')
     } catch (err: any) {
-      setSubmitError(err.message || 'Failed to add user')
+      setSubmitError(err.message || 'Failed to update user')
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-warm flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-foreground-muted">Loading user data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gradient-warm flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-500 mb-4">User not found</p>
+          <Button onClick={() => router.push('/dashboard')} variant="outline">
+            Back to Dashboard
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -137,7 +223,7 @@ export default function AddUserPage() {
       {/* Header */}
       <header className="bg-background shadow-soft">
         <div className="container mx-auto px-4 py-4 flex justify-end sm:justify-between items-center">
-          <h1 className="text-2xl font-bold text-foreground hidden sm:block">Add New User</h1>
+          <h1 className="text-2xl font-bold text-foreground hidden sm:block">Edit User</h1>
           <div className="flex items-center space-x-4">
             <span className="text-foreground-muted">Welcome, {user?.username}</span>
             <Button 
@@ -156,17 +242,19 @@ export default function AddUserPage() {
         {/* Back Button */}
         <div className="mb-6">
           <Button 
-            onClick={() => router.push('/dashboard')} 
+            onClick={() => router.push(`/dashboard/users/${userId}`)} 
             variant="outline"
           >
-            ← Back to Dashboard
+            ← Back to User Details
           </Button>
         </div>
 
-        {/* Add User Form */}
+        {/* Edit User Form */}
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-primary">Add New User</CardTitle>
+            <CardTitle className="text-primary">
+              Edit User: {userData.firstName} {userData.lastName}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -319,7 +407,7 @@ export default function AddUserPage() {
               <div className="flex justify-end space-x-4">
                 <Button
                   type="button"
-                  onClick={() => router.push('/dashboard')}
+                  onClick={() => router.push(`/dashboard/users/${userId}`)}
                   variant="outline"
                   disabled={isSubmitting}
                 >
@@ -329,7 +417,7 @@ export default function AddUserPage() {
                   type="submit"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Adding User...' : 'Add User'}
+                  {isSubmitting ? 'Updating User...' : 'Update User'}
                 </Button>
               </div>
             </form>
