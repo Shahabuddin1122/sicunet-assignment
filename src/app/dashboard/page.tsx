@@ -4,11 +4,13 @@ import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import userService from '@/services/userService'
 import { User } from '@/types/user'
 
 export default function DashboardPage() {
   const { user, logout } = useAuth()
+  const router = useRouter()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,6 +45,10 @@ export default function DashboardPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
+  }
+
+  const handleUserClick = (userId: number) => {
+    router.push(`/dashboard/users/${userId}`)
   }
 
   return (
@@ -106,7 +112,11 @@ export default function DashboardPage() {
                 {/* User Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                   {users.map((user) => (
-                    <Card key={user.id} className="hover:shadow-md transition-shadow">
+                    <Card 
+                      key={user.id} 
+                      className="hover:shadow-md transition-shadow cursor-pointer hover:scale-105 transform transition-transform"
+                      onClick={() => handleUserClick(user.id)}
+                    >
                       <CardContent className="p-4">
                         <div className="flex items-center space-x-3">
                           <img
