@@ -50,7 +50,7 @@
   --muted-foreground: #006A67;
   
   /* Card Colors */
-  --card: #FDEB9E;
+  --card: #FFF;
   --card-foreground: #000B58;
   
   /* Popover Colors */
@@ -159,11 +159,6 @@
   }
 }
 
-/* Base styles */
-* {
-  border-color: var(--border);
-}
-
 html {
   scroll-behavior: smooth;
 }
@@ -244,8 +239,8 @@ a:hover {
 /* Button base styles */
 button {
   cursor: pointer;
-  border: none;
-  background: none;
+  /*border: none;*/
+  /*background: none;*/
   font-family: inherit;
 }
 
