@@ -9,7 +9,9 @@ interface FetchOptions {
 class FetchService {
     private readonly baseUrl: string;
     constructor() {
-        this.baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        // Use Next.js environment variable
+        this.baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "https://dummyjson.com";
     }
 
     private getAuthHeaders(): HeadersInit {
