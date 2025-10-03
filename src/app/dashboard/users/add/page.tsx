@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import userService from '@/services/userService'
 import { AddUser } from '@/types/user'
 
@@ -20,7 +21,7 @@ export default function AddUserPage() {
     weight: 0,
     image: ''
   })
-  const [errors, setErrors] = useState<Partial<AddUser>>({})
+  const [errors, setErrors] = useState<Partial<Record<keyof AddUser, string>>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -45,7 +46,7 @@ export default function AddUserPage() {
   }
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<AddUser> = {}
+    const newErrors: Partial<Record<keyof AddUser, string>> = {}
     
     // Required field validation
     if (!formData.username.trim()) {
@@ -125,8 +126,8 @@ export default function AddUserPage() {
       
       // Redirect to dashboard on success
       router.push('/dashboard')
-    } catch (err: any) {
-      setSubmitError(err.message || 'Failed to add user')
+    } catch (err: unknown) {
+      setSubmitError(err instanceof Error ? err.message : 'Failed to add user')
     } finally {
       setIsSubmitting(false)
     }
@@ -296,9 +297,11 @@ export default function AddUserPage() {
                 )}
                 {formData.image && (
                   <div className="mt-2">
-                    <img
+                    <Image
                       src={formData.image}
                       alt="Preview"
+                      width={64}
+                      height={64}
                       className="w-16 h-16 rounded-full object-cover border"
                       onError={(e) => {
                         e.currentTarget.style.display = 'none'

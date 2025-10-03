@@ -28,13 +28,13 @@ class AuthService {
             this.setUser(user);
 
             return { success: true, user };
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Login error:', error);
             return { 
                 success: false, 
                 error: { 
-                    message: error.message || 'Login failed', 
-                    status: error.status 
+                    message: error instanceof Error ? error.message : 'Login failed', 
+                    status: (error as { status?: number })?.status 
                 } 
             };
         }
@@ -112,13 +112,13 @@ class AuthService {
 
             this.setToken(response.token);
             return { success: true, token: response.token };
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Token refresh error:', error);
             return { 
                 success: false, 
                 error: { 
-                    message: error.message || 'Token refresh failed', 
-                    status: error.status 
+                    message: error instanceof Error ? error.message : 'Token refresh failed', 
+                    status: (error as { status?: number })?.status 
                 } 
             };
         }

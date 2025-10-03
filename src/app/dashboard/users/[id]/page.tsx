@@ -3,8 +3,9 @@
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import userService from '@/services/userService'
 import { User } from '@/types/user'
 
@@ -24,24 +25,24 @@ export default function UserDetailPage() {
     logout()
   }
 
-  const fetchUserDetail = async () => {
+  const fetchUserDetail = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
       const user = await userService.getUserById(parseInt(userId))
       setUserDetail(user)
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch user details')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch user details')
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     if (userId) {
       fetchUserDetail()
     }
-  }, [userId])
+  }, [userId, fetchUserDetail])
 
   const handleBack = () => {
     router.push('/dashboard')
@@ -55,8 +56,8 @@ export default function UserDetailPage() {
       await userService.deleteUser(userDetail.id)
       // Redirect to dashboard after successful deletion
       router.push('/dashboard')
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete user')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to delete user')
       setShowDeleteConfirm(false)
     } finally {
       setDeleting(false)
@@ -139,9 +140,11 @@ export default function UserDetailPage() {
                 <CardTitle className="text-primary">Profile</CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <img
+                <Image
                   src={userDetail.image}
                   alt={`${userDetail.firstName} ${userDetail.lastName}`}
+                  width={128}
+                  height={128}
                   className="w-32 h-32 rounded-full object-cover mx-auto mb-4"
                 />
                 <h2 className="text-2xl font-bold text-foreground mb-2">

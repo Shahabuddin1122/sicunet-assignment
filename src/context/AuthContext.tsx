@@ -59,11 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: result.error?.message || 'Login failed' 
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error)
       return { 
         success: false, 
-        error: error.message || 'An error occurred during login' 
+        error: error instanceof Error ? error.message : 'An error occurred during login' 
       }
     }
   }
